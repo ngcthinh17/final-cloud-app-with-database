@@ -128,23 +128,27 @@ def submit(request, course_id):
 
 # Exam result view to check if learner passed exam and display results
 def show_exam_result(request, course_id, submission_id):
-    context = {}
     course = get_object_or_404(Course, pk=course_id)
     submission = get_object_or_404(Submission, pk=submission_id)
 
     selected_ids = [choice.id for choice in submission.choices.all()]
     total_score = 0
-    total_possible = 0
+    possible_score = 0
 
     for question in course.question_set.all():
-        total_possible += question.grade
+        possible_score += question.grade
         if question.is_get_score(selected_ids):
             total_score += question.grade
 
-    grade = int((total_score / total_possible) * 100) if total_possible > 0 else 0
+    grade = int((total_score / possible_score) * 100) if possible_score > 0 else 0
 
-    context['course'] = course
-    context['grade'] = grade
-    context['submission'] = submission
-    context['selected_ids'] = selected_ids
+    context = {
+        'course': course,
+        'grade': grade,
+        'total_score': total_score,
+        'possible': possible_score,
+        'possible_score': possible_score,
+        'submission': submission,
+        'selected_ids': selected_ids
+    }
     return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
